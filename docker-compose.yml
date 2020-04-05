@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  web:
+    build:
+      context: ./docker/web/
+      dockerfile: dockerfile
+    volumes:
+      - ./docker/web/php.ini:/usr/local/etc/php/php.ini
+      - ./laravel:/var/www/html/laravel
+    ports:
+      - 8000:80
+    links:
+      - mysql:mysql
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    ports:
+      - 13306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=test
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql
+      - PMA_USER=test
+      - PMA_PASSWORD=test
+    links:
+      - mysql
+    ports:
+      - 4000:80
+    volumes:
+      - ./docker/phpmyadmin/sessions:/sessions

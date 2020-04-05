@@ -1,0 +1,18 @@
+FROM php:7.3-apache
+COPY ./*.conf /etc/apache2/sites-available/
+RUN echo "LoadModule vhost_alias_module /usr/lib/apache2/modules/mod_vhost_alias.so" >> /etc/apache2/mods-enabled/vhost_alias.load \
+  && echo "LoadModule vhost_alias_module /usr/lib/apache2/modules/mod_vhost_alias.so" >> /etc/apache2/mods-available/vhost_alias.load \
+  && a2dissite 000-default.conf && a2ensite laravel.conf && a2enmod rewrite
+
+RUN apt-get update \
+  && apt-get install -y zlib1g-dev libzip-dev libpq-dev mariadb-client unzip vim\
+  && docker-php-ext-install zip pdo_mysql mysqli pdo_pgsql \
+  && docker-php-ext-enable mysqli
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_HOME /composer
+ENV PATH $PATH:/composer/vendor/bin
+
+WORKDIR /var/www/html
+RUN composer global require "laravel/installer"
